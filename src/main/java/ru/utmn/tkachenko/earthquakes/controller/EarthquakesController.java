@@ -20,7 +20,7 @@ public class EarthquakesController {
     }
 
     @GetMapping
-    public Collection<Earthquake> getAll() {
+    public Iterable<Earthquake> getAll() {
         return earthquakesService.getAll();
     }
 

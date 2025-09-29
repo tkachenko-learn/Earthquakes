@@ -4,11 +4,15 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.server.ResponseStatusException;
 import ru.utmn.tkachenko.earthquakes.model.Earthquake;
+import ru.utmn.tkachenko.earthquakes.repository.EarthquakeCsvRepository;
+import ru.utmn.tkachenko.earthquakes.repository.EarthquakeJdbcRepository;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,77 +24,49 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.StreamSupport;
 
 @Service
 public class EarthquakesService {
 
-    private final Map<String, Earthquake> earthquakes = new HashMap<>();
+    EarthquakeCsvRepository repository;
+    EarthquakeJdbcRepository repository2;
 
-    @PostConstruct
-    private void readAllLines() {
-        try (
-                InputStream is = EarthquakesService.class.getResourceAsStream("/Землетрясения.csv");
-                InputStreamReader streamReader = new InputStreamReader(is);
-                BufferedReader reader = new BufferedReader(streamReader);
-                CSVReader csvReader = new CSVReaderBuilder(reader)
-                                    .withSkipLines(1)
-                                    .build();
-        ) {
-            List<String[]> lines = csvReader.readAll();
-
-            DateTimeFormatter formatter =
-                    DateTimeFormatter.ofPattern("[yyyy-MM-dd'T'HH:mm:ss.SSS'Z'][yyyy-MM-dd HH:mm:ss][yyyy-MM-dd H:mm:ss]");
-            for (String[] line : lines) {
-                String id = line[0];
-                if (id == null)
-                    continue;
-                Earthquake earthquake = new Earthquake();
-                earthquake.setId(id);
-                earthquake.setDeep(line[1] != null ? Integer.parseInt(line[1]) : null);
-                earthquake.setType(line[2]);
-                earthquake.setMagnitude(line[3] != null ? Double.parseDouble(line[3]) : null);
-                earthquake.setState(line[4]);
-                LocalDateTime dateTime = line[5] != null
-                    ? LocalDateTime.parse(line[5], formatter)
-                    : null;
-                earthquake.setDateTime(dateTime);
-
-                earthquakes.put(id, earthquake);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (CsvException e) {
-            throw new RuntimeException(e);
+    public EarthquakesService(EarthquakeCsvRepository repository, EarthquakeJdbcRepository repository2) {
+        this.repository = repository;
+        this.repository2 = repository2;
+        if (repository2.count() == 0 && repository.count() > 0) {
+            Iterable<Earthquake> all = repository.findAll();
+            Collection<Earthquake> collection = StreamSupport.stream(all.spliterator(), false).toList();
+            repository2.save(collection);
         }
     }
 
-    public Collection<Earthquake> getAll() {
-        return earthquakes.values();
+    public Iterable<Earthquake> getAll() {
+        return repository2.findAll();
     }
 
     public Earthquake getOne(String id) {
-        if (!earthquakes.containsKey(id))
+        if (!repository2.exists(id))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Запись не существует");
-        return earthquakes.get(id);
+        return repository2.findById(id);
     }
 
     public Earthquake add(Earthquake earthquake) {
-        if (earthquakes.containsKey(earthquake.getId()))
+        if (repository2.exists(earthquake.getId()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Запись создана ранее");
-        earthquakes.put(earthquake.getId(), earthquake);
-        return earthquake;
+        return repository2.save(earthquake);
     }
 
     public void update(Earthquake earthquake) {
-        if (!earthquakes.containsKey(earthquake.getId()))
+        if (!repository2.exists(earthquake.getId()))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Запись не существует");
-        earthquakes.put(earthquake.getId(), earthquake);
+        repository2.save(earthquake);
     }
 
     public void delete(String id) {
-        if (!earthquakes.containsKey(id))
+        if (!repository2.exists(id))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Запись не существует");
-        earthquakes.remove(id);
+        repository2.delete(id);
     }
 }
