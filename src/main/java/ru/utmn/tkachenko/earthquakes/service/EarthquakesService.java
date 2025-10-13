@@ -1,40 +1,32 @@
 package ru.utmn.tkachenko.earthquakes.service;
 
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvException;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.server.ResponseStatusException;
 import ru.utmn.tkachenko.earthquakes.model.Earthquake;
-import ru.utmn.tkachenko.earthquakes.repository.EarthquakeCsvRepository;
-import ru.utmn.tkachenko.earthquakes.repository.EarthquakeJdbcRepository;
+import ru.utmn.tkachenko.earthquakes.repository.CommonRepository;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.StreamSupport;
 
-//@Service
-public class EarthquakesService {
+@Service
+@Profile({"CsvEngine", "JdbcEngine"})
+public class EarthquakesService implements EarthquakesServiceInterface {
 
-    EarthquakeCsvRepository repository;
-    EarthquakeJdbcRepository repository2;
+    CommonRepository<Earthquake> repository;
 
-    public EarthquakesService(EarthquakeCsvRepository repository, EarthquakeJdbcRepository repository2) {
+    public EarthquakesService(
+            CommonRepository<Earthquake> repository,
+            @Qualifier("CsvRepository") CommonRepository<Earthquake> repository2
+    ) {
         this.repository = repository;
-        this.repository2 = repository2;
+
+        if (repository2.getClass().equals(repository.getClass())) {
+            return;
+        }
+
         if (repository2.count() == 0 && repository.count() > 0) {
             Iterable<Earthquake> all = repository.findAll();
             Collection<Earthquake> collection = StreamSupport.stream(all.spliterator(), false).toList();
@@ -43,30 +35,30 @@ public class EarthquakesService {
     }
 
     public Iterable<Earthquake> getAll() {
-        return repository2.findAll();
+        return repository.findAll();
     }
 
     public Earthquake getOne(String id) {
-        if (!repository2.exists(id))
+        if (!repository.exists(id))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Запись не существует");
-        return repository2.findById(id);
+        return repository.findById(id);
     }
 
     public Earthquake add(Earthquake earthquake) {
-        if (repository2.exists(earthquake.getId()))
+        if (repository.exists(earthquake.getId()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Запись создана ранее");
-        return repository2.save(earthquake);
+        return repository.save(earthquake);
     }
 
     public void update(Earthquake earthquake) {
-        if (!repository2.exists(earthquake.getId()))
+        if (!repository.exists(earthquake.getId()))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Запись не существует");
-        repository2.save(earthquake);
+        repository.save(earthquake);
     }
 
     public void delete(String id) {
-        if (!repository2.exists(id))
+        if (!repository.exists(id))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Запись не существует");
-        repository2.delete(id);
+        repository.delete(id);
     }
 }

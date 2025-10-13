@@ -4,6 +4,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import ru.utmn.tkachenko.earthquakes.model.Earthquake;
 import ru.utmn.tkachenko.earthquakes.service.EarthquakesService;
@@ -19,7 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Repository
+@Repository("CsvRepository")
+@Profile({"CsvEngine", "JdbcEngine"})
 public class EarthquakeCsvRepository implements CommonRepository<Earthquake> {
 
     private final Map<String, Earthquake> earthquakes = new HashMap<>();

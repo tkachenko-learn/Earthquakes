@@ -1,5 +1,6 @@
 package ru.utmn.tkachenko.earthquakes.service;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -7,7 +8,8 @@ import ru.utmn.tkachenko.earthquakes.model.Earthquake;
 import ru.utmn.tkachenko.earthquakes.repository.EarthquakeJpaRepository;
 
 @Service
-public class EarthquakesJpaService {
+@Profile("JpaEngine")
+public class EarthquakesJpaService implements EarthquakesServiceInterface {
 
     private final EarthquakeJpaRepository repository;
 

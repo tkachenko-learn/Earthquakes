@@ -1,5 +1,7 @@
 package ru.utmn.tkachenko.earthquakes.repository;
 
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -16,6 +18,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
+@Profile("JdbcEngine")
+@Primary
 public class EarthquakeJdbcRepository implements CommonRepository<Earthquake> {
 
     private static final String SQL_INSERT = """

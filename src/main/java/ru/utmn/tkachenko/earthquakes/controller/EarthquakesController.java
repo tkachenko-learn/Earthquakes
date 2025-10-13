@@ -1,24 +1,18 @@
 package ru.utmn.tkachenko.earthquakes.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.utmn.tkachenko.earthquakes.model.Earthquake;
-import ru.utmn.tkachenko.earthquakes.service.EarthquakesJpaService;
-import ru.utmn.tkachenko.earthquakes.service.EarthquakesService;
-
-import java.util.Collection;
+import ru.utmn.tkachenko.earthquakes.service.EarthquakesServiceInterface;
 
 @RestController
 @RequestMapping("/api/earthquakes")
 public class EarthquakesController {
 
-    //private final EarthquakesService earthquakesService;
+    private final EarthquakesServiceInterface earthquakesService;
 
-    private final EarthquakesJpaService earthquakesService;
-
-    public EarthquakesController(EarthquakesJpaService earthquakesService) {
+    public EarthquakesController(EarthquakesServiceInterface earthquakesService) {
         this.earthquakesService = earthquakesService;
     }
 
