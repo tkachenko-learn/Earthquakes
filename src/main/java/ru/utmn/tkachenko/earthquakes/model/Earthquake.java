@@ -1,14 +1,29 @@
 package ru.utmn.tkachenko.earthquakes.model;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
+@Entity
 public class Earthquake {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
+    @Column
     Integer deep;
+
+    @Column
     String type;
+
+    @Column
     Double magnitude;
+
+    @Column(length = 100)
     String state;
+
+    @Column(name = "date_event")
     LocalDateTime dateTime;
 
     public String getId() {

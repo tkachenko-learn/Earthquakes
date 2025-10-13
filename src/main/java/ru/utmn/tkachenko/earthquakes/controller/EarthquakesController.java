@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.utmn.tkachenko.earthquakes.model.Earthquake;
+import ru.utmn.tkachenko.earthquakes.service.EarthquakesJpaService;
 import ru.utmn.tkachenko.earthquakes.service.EarthquakesService;
 
 import java.util.Collection;
@@ -13,9 +14,11 @@ import java.util.Collection;
 @RequestMapping("/api/earthquakes")
 public class EarthquakesController {
 
-    private final EarthquakesService earthquakesService;
+    //private final EarthquakesService earthquakesService;
 
-    public EarthquakesController(EarthquakesService earthquakesService) {
+    private final EarthquakesJpaService earthquakesService;
+
+    public EarthquakesController(EarthquakesJpaService earthquakesService) {
         this.earthquakesService = earthquakesService;
     }
 
