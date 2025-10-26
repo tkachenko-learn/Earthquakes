@@ -1,5 +1,6 @@
 package ru.utmn.tkachenko.earthquakes.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ public class EarthquakesController {
         this.earthquakesService = earthquakesService;
     }
 
+    @Operation(summary = "Возвращает все записи", description = "Может работать медленно из-за отсутсвия пагинации")
     @GetMapping
     public Iterable<Earthquake> getAll() {
         return earthquakesService.getAll();
