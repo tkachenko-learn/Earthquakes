@@ -2,6 +2,7 @@ package ru.utmn.tkachenko.earthquakes.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,12 +12,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import ru.utmn.tkachenko.earthquakes.security.JpaUserDetailsService;
+import ru.utmn.tkachenko.earthquakes.security.PersonRepository;
+
+import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
+    @Profile({"CsvEngine", "JdbcEngine"})
     public UserDetailsService userDetailsService(BCryptPasswordEncoder bCryptPasswordEncoder) {
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
         manager.createUser(
@@ -33,6 +39,14 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Profile("JpaEngine")
+    public UserDetailsService userDetailsService2(
+            PersonRepository personRepository,
+            BCryptPasswordEncoder bCryptPasswordEncoder) {
+        return new JpaUserDetailsService(personRepository, bCryptPasswordEncoder);
+    }
+
+    @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -40,15 +54,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.ignoringRequestMatchers(toH2Console()).disable())
             .authorizeHttpRequests(authorizationRegistry ->
                     authorizationRegistry
-                            //.requestMatchers(HttpMethod.DELETE).hasRole("ADMIN")
                             .requestMatchers("/admin/**").hasRole("ADMIN")
                             .requestMatchers("/api/**").hasAnyRole("ADMIN", "USER")
                             .requestMatchers("/login/**").permitAll()
+                            .requestMatchers(toH2Console()).permitAll()
                             .anyRequest().permitAll()
             )
+            .headers(headers -> headers.frameOptions(frameOptionsConfig -> frameOptionsConfig.disable()))
             .httpBasic(Customizer.withDefaults());
 
         return http.build();
