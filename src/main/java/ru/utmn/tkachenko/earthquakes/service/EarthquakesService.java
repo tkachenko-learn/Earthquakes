@@ -27,10 +27,10 @@ public class EarthquakesService implements EarthquakesServiceInterface {
             return;
         }
 
-        if (repository2.count() == 0 && repository.count() > 0) {
-            Iterable<Earthquake> all = repository.findAll();
+        if (repository2.count() > 0 && repository.count() == 0) {
+            Iterable<Earthquake> all = repository2.findAll();
             Collection<Earthquake> collection = StreamSupport.stream(all.spliterator(), false).toList();
-            repository2.save(collection);
+            repository.save(collection);
         }
     }
 
