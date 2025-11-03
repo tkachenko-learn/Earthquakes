@@ -53,4 +53,9 @@ public class EarthquakesController {
     ) {
         earthquakesService.delete(id);
     }
+
+    @GetMapping("/avg")
+    public Double avgMagnitude() {
+        return earthquakesService.avgMagnitude();
+    }
 }

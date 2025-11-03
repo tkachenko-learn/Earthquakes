@@ -61,4 +61,11 @@ public class EarthquakesService implements EarthquakesServiceInterface {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Запись не существует");
         repository.delete(id);
     }
+
+    @Override
+    public Double avgMagnitude() {
+        var targetStream = StreamSupport.stream(repository.findAll().spliterator(), false);
+        var result = targetStream.mapToDouble(e -> e.getMagnitude()).average().orElse(Double.NaN);
+        return result;
+    }
 }

@@ -13,4 +13,6 @@ public interface EarthquakesServiceInterface {
     void update(Earthquake earthquake);
 
     void delete(String id);
+
+    Double avgMagnitude();
 }

@@ -44,4 +44,9 @@ public class EarthquakesJpaService implements EarthquakesServiceInterface {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Запись не существует");
         repository.deleteById(id);
     }
+
+    @Override
+    public Double avgMagnitude() {
+        return repository.getAvgMagnitude();
+    }
 }
