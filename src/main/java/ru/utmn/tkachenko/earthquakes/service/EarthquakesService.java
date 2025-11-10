@@ -22,7 +22,10 @@ public class EarthquakesService implements EarthquakesServiceInterface {
             @Qualifier("CsvRepository") CommonRepository<Earthquake> repository2
     ) {
         this.repository = repository;
+        init(repository);
+    }
 
+    void init(CommonRepository<Earthquake> repository2) {
         if (repository2.getClass().equals(repository.getClass())) {
             return;
         }
